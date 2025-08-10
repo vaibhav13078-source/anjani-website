@@ -35,7 +35,7 @@ courses = [
     {
         "name": "Typing with GCC TBC",
         "img": "https://raw.githubusercontent.com/vaibhav13078-source/anjani-website/main/anjani_website/Typing.jpg",
-    },
+     },
 ]
 
 cols = st.columns(3)
@@ -48,43 +48,50 @@ for idx, course in enumerate(courses):
         )
         st.button("Know More", key=course["name"])
 
-# Enquiry Form Section
-st.markdown("---")
-st.subheader("Enquiry Form")
+import streamlit as st
+import pandas as pd
+from datetime import datetime
 
+st.markdown("---")
+st.subheader("📩 Enquiry Form")
+
+# Form UI
 with st.form("enquiry_form", clear_on_submit=True):
-    name = st.text_input("Full Name")
-    mobile = st.text_input("Mobile Number")
-    city = st.text_input("City")
-    message = st.text_area("Message")
+    col1, col2 = st.columns(2)
+    with col1:
+        name = st.text_input("Full Name*")
+    with col2:
+        phone = st.text_input("Mobile Number*")
+
+    course = st.selectbox(
+        "Select Course*",
+        ["MS-CIT", "Tally Prime with GST", "Typing with GCC TBC", "Other"]
+    )
+
     submitted = st.form_submit_button("Submit Enquiry")
 
     if submitted:
-        data = {
-            "Name": [name],
-            "Mobile Number": [mobile],
-            "City": [city],
-            "Message": [message],
-        }
-        df = pd.DataFrame(data)
+        if name.strip() and phone.strip():
+            new_data = pd.DataFrame([{
+                "Name": name.strip(),
+                "Phone": phone.strip(),
+                "Course": course,
+                "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }])
 
-        file_dir = "anjani_website"
-        file_path = os.path.join(file_dir, "enquiry.xlsx")
-        os.makedirs(file_dir, exist_ok=True)
+            file_path = "enquiries.xlsx"
 
-        if os.path.exists(file_path):
-            old_df = pd.read_excel(file_path)
-            df = pd.concat([old_df, df], ignore_index=True)
-        df.to_excel(file_path, index=False, engine="openpyxl")
+            try:
+                # Append if file exists
+                try:
+                    old_data = pd.read_excel(file_path, engine="openpyxl")
+                    df = pd.concat([old_data, new_data], ignore_index=True)
+                except FileNotFoundError:
+                    df = new_data
 
-        st.success("Thank you for your enquiry! We will get back to you soon.")
-
-# Footer
-st.markdown("---")
-st.markdown(
-    "<div style='text-align:center; color:#7f8c8d; font-size:0.9rem;'>© 2024 Anjani Computer Institute. All rights reserved.</div>",
-    unsafe_allow_html=True,
-)
-
-
-
+                df.to_excel(file_path, index=False, engine="openpyxl")
+                st.success("✅ Your enquiry has been submitted successfully!")
+            except Exception as e:
+                st.error(f"❌ Error saving enquiry: {e}")
+        else:
+            st.warning("⚠ Please fill all required fields (*).")
