@@ -98,4 +98,18 @@ with st.form("enquiry_form", clear_on_submit=True):
 import pandas as pd
 df = pd.read_excel("anjani_website/enquiry.xlsx")
 
+import os
+import pandas as pd
+
+file_path = "anjani_website/enquiry.xlsx"
+
+# फाइल नसेल तर तयार कर
+if not os.path.exists(file_path):
+    df = pd.DataFrame(columns=["Name", "Email", "Message"])
+    df.to_excel(file_path, index=False)
+
+# आता read कर
+df = pd.read_excel(file_path)
+
+
 
