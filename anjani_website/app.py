@@ -95,21 +95,25 @@ with st.form("enquiry_form", clear_on_submit=True):
                 st.error(f"❌ Error saving enquiry: {e}")
         else:
             st.warning("⚠ Please fill all required fields (*).")
-import pandas as pd
-df = pd.read_excel("anjani_website/enquiry.xlsx")
+# Display Enquiries Section (Google Sheets)
+st.markdown("---")
+st.subheader("📋 View Submitted Enquiries (Google Sheets)")
 
-import os
-import pandas as pd
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
-file_path = "anjani_website/enquiry.xlsx"
+# Google Sheets setup
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+client = gspread.authorize(creds)
+sheet = client.open_by_key("1eJsjTEBeibYszJFN-ij-4AUn0XI4GuHjWNf4U0YeqFs").sheet1
 
-# फाइल नसेल तर तयार कर
-if not os.path.exists(file_path):
-    df = pd.DataFrame(columns=["Name", "Email", "Message"])
-    df.to_excel(file_path, index=False)
-
-# आता read कर
-df = pd.read_excel(file_path)
-
-
-
+try:
+    data = sheet.get_all_records()
+    if data:
+        df = pd.DataFrame(data)
+        st.dataframe(df)
+    else:
+        st.info("No enquiries submitted yet.")
+except Exception as e:
+    st.error(f"❌ Could not read enquiries from Google Sheets: {e}")
