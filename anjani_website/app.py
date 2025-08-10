@@ -34,7 +34,7 @@ courses = [
     },
     {
         "name": "Typing with GCC TBC",
-        "img": "https://raw.githubusercontent.com/vaibhav13078-source/anjani-website/main/anjani_website/typing.jpg",
+        "img": "https://raw.githubusercontent.com/vaibhav13078-source/anjani-website/main/anjani_website/Typing.jpg",
     },
 ]
 
@@ -85,3 +85,4 @@ st.markdown(
     "<div style='text-align:center; color:#7f8c8d; font-size:0.9rem;'>© 2024 Anjani Computer Institute. All rights reserved.</div>",
     unsafe_allow_html=True,
 )
+
