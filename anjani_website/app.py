@@ -95,10 +95,107 @@ with st.form("enquiry_form", clear_on_submit=True):
                 st.error(f"❌ Error saving enquiry: {e}")
         else:
             st.warning("⚠ Please fill all required fields (*).")
-# Display Enquiries Section (Google Sheets)
-st.markdown("---")
-st.subheader("📋 View Submitted Enquiries (Google Sheets)")
 
+
+import streamlit as st
+import pandas as pd
+import os
+
+# Set page config
+st.set_page_config(page_title="Anjani Computer", page_icon=":computer:", layout="centered")
+
+# Header Section
+st.image(
+    "https://raw.githubusercontent.com/vaibhav13078-source/anjani-website/main/anjani_website/logo.png",
+    width=120,
+)
+st.markdown(
+    "<h1 style='color:#2c3e50; font-weight:700;'>Anjani Computer Institute</h1>",
+    unsafe_allow_html=True,
+)
+st.markdown(
+    "<p style='font-size:1.1rem; color:#34495e;'>Empowering Your Future with Quality IT & Typing Education</p>",
+    unsafe_allow_html=True,
+)
+
+# Courses Section
+st.markdown("---")
+st.subheader("Our Popular Courses")
+
+courses = [
+    {
+        "name": "MS-CIT",
+        "img": "https://raw.githubusercontent.com/vaibhav13078-source/anjani-website/main/anjani_website/mscIT.jpg",
+    },
+    {
+        "name": "Tally Prime with GST",
+        "img": "https://raw.githubusercontent.com/vaibhav13078-source/anjani-website/main/anjani_website/Tallygst.jpg",
+    },
+    {
+        "name": "Typing with GCC TBC",
+        "img": "https://raw.githubusercontent.com/vaibhav13078-source/anjani-website/main/anjani_website/Typing.jpg",
+     },
+]
+
+cols = st.columns(3)
+for idx, course in enumerate(courses):
+    with cols[idx]:
+        st.image(course["img"], use_container_width=True)
+        st.markdown(
+            f"<div style='text-align:center; font-weight:600; color:#2980b9;'>{course['name']}</div>",
+            unsafe_allow_html=True,
+        )
+        st.button("Know More", key=course["name"])
+
+import streamlit as st
+import pandas as pd
+from datetime import datetime
+
+st.markdown("---")
+st.subheader("📩 Enquiry Form")
+
+# Form UI
+with st.form("enquiry_form", clear_on_submit=True):
+    col1, col2 = st.columns(2)
+    with col1:
+        name = st.text_input("Full Name*")
+    with col2:
+        phone = st.text_input("Mobile Number*")
+
+    course = st.selectbox(
+        "Select Course*",
+        ["MS-CIT", "Tally Prime with GST", "Typing with GCC TBC", "Other"]
+    )
+
+    submitted = st.form_submit_button("Submit Enquiry")
+
+    if submitted:
+        if name.strip() and phone.strip():
+            new_data = pd.DataFrame([{
+                "Name": name.strip(),
+                "Phone": phone.strip(),
+                "Course": course,
+                "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }])
+
+            file_path = "enquiries.xlsx"
+
+            try:
+                # Append if file exists
+                try:
+                    old_data = pd.read_excel(file_path, engine="openpyxl")
+                    df = pd.concat([old_data, new_data], ignore_index=True)
+                except FileNotFoundError:
+                    df = new_data
+
+                df.to_excel(file_path, index=False, engine="openpyxl")
+                st.success("✅ Your enquiry has been submitted successfully!")
+            except Exception as e:
+                st.error(f"❌ Error saving enquiry: {e}")
+        else:
+            st.warning("⚠ Please fill all required fields (*).")
+import streamlit as st
+from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -108,12 +205,18 @@ creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", sco
 client = gspread.authorize(creds)
 sheet = client.open_by_key("1eJsjTEBeibYszJFN-ij-4AUn0XI4GuHjWNf4U0YeqFs").sheet1
 
-try:
-    data = sheet.get_all_records()
-    if data:
-        df = pd.DataFrame(data)
-        st.dataframe(df)
-    else:
-        st.info("No enquiries submitted yet.")
-except Exception as e:
-    st.error(f"❌ Could not read enquiries from Google Sheets: {e}")
+# Enquiry Form UI
+st.subheader("📩 Enquiry Form")
+with st.form("enquiry_form", clear_on_submit=True):
+    name = st.text_input("Full Name*")
+    phone = st.text_input("Mobile Number*")
+    course = st.selectbox("Select Course*", ["MS-CIT", "Tally Prime with GST", "Typing with GCC TBC", "Other"])
+    submitted = st.form_submit_button("Submit Enquiry")
+
+    if submitted:
+        if name.strip() and phone.strip():
+            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            sheet.append_row([now, name.strip(), phone.strip(), course])
+            st.success("✅ Enquiry submitted and saved to Google Sheets!")
+        else:
+            st.warning("⚠ Please fill all required fields (*).")
