@@ -102,7 +102,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 # Google Sheets setup
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+creds_dict = st.secrets["google_service_account"]
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(creds)
 sheet = client.open_by_key("1eJsjTEBeibYszJFN-ij-4AUn0XI4GuHjWNf4U0YeqFs").sheet1
 
@@ -121,3 +122,4 @@ with st.form("enquiry_form", clear_on_submit=True):
             st.success("✅ Enquiry submitted and saved to Google Sheets!")
         else:
             st.warning("⚠ Please fill all required fields (*).")
+
