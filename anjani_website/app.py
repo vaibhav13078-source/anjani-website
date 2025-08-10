@@ -1,3 +1,10 @@
+try:
+    sh = client.open_by_key("1eJsjTEBeibYszJFN-ij-4AUn0XI4GuHjWNf4U0YeqFs")
+    st.success(f"Connected to spreadsheet: {sh.title}")
+    st.write("Sheets:", [ws.title for ws in sh.worksheets()])
+except Exception as e:
+    st.error(f"Connection error: {e}")
+
 # app.py
 import streamlit as st
 import gspread
@@ -93,3 +100,4 @@ if st.checkbox("Show all enquiries (admin)"):
         st.dataframe(data)
     except Exception as e:
         st.error(f"Error reading sheet: {e}")
+
