@@ -15,10 +15,14 @@ st.markdown("---")
 st.subheader("Our Popular Courses")
 
 courses = [
-    {"name": "MS-CIT", "img": "mscIT.jpg"},
-    {"name": "Tally Prime with GST", "img": "Tallygst.jpg"},
-    {"name": "Typing with GCC TBC", "img": "typing.jpg"},
+    {"name": "MS-CIT", "img": "https://raw.githubusercontent.com/vaibhav13078-source/anjani-website/main/anjani_website/mscIT.jpg"},
+    {"name": "Tally Prime with GST", "img": "https://raw.githubusercontent.com/vaibhav13078-source/anjani-website/main/anjani_website/Tallygst.jpg"},
+    {"name": "Typing with GCC TBC", "img": "https://raw.githubusercontent.com/vaibhav13078-source/anjani-website/main/anjani_website/typing.jpg"},
 ]
+
+for course in courses:
+    st.image(course["img"], use_container_width=True)
+    st.markdown(f"**{course['name']}**")
 
 cols = st.columns(3)
 for idx, course in enumerate(courses):
@@ -64,4 +68,5 @@ st.markdown(
     "<div style='text-align:center; color:#7f8c8d; font-size:0.9rem;'>© 2024 Anjani Computer Institute. All rights reserved.</div>",
     unsafe_allow_html=True
 )
+
 
