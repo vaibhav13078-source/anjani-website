@@ -96,5 +96,6 @@ with st.form("enquiry_form", clear_on_submit=True):
         else:
             st.warning("⚠ Please fill all required fields (*).")
 import pandas as pd
-df = pd.read_excel("anjani_website/anjani_website/enquiry.xlsx")
+df = pd.read_excel("anjani_website/enquiry.xlsx")
+
 
