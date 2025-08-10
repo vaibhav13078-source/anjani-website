@@ -95,3 +95,6 @@ with st.form("enquiry_form", clear_on_submit=True):
                 st.error(f"❌ Error saving enquiry: {e}")
         else:
             st.warning("⚠ Please fill all required fields (*).")
+import pandas as pd
+df = pd.read_excel("anjani_website/enquiry.xlsx")
+
