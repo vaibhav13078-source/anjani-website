@@ -1,4 +1,3 @@
-# app.py
 import streamlit as st
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -49,16 +48,22 @@ for idx, course in enumerate(courses):
             unsafe_allow_html=True,
         )
 
-# Google Sheets Setup
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds_dict = st.secrets.get("google_service_account")
-if not creds_dict:
-    st.error("Google credentials not found in Streamlit secrets. Go to Settings → Secrets and add 'google_service_account'.")
-    st.stop()
+# Google Sheets Setup Function
+@st.cache_resource(show_spinner=False)
+def get_sheet():
+    scope = [
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/drive"
+    ]
+    creds_dict = st.secrets.get("google_service_account")
+    if not creds_dict:
+        st.error("Google credentials not found in Streamlit secrets. Go to Settings → Secrets and add 'google_service_account'.")
+        st.stop()
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    client = gspread.authorize(creds)
+    return client.open_by_key("1eJsjTEBeibYszJFN-ij-4AUn0XI4GuHjWNf4U0YeqFs").sheet1
 
-creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-client = gspread.authorize(creds)
-sheet = client.open_by_key("1eJsjTEBeibYszJFN-ij-4AUn0XI4GuHjWNf4U0YeqFs").sheet1
+sheet = get_sheet()
 
 # Enquiry Form
 st.markdown("---")
@@ -78,11 +83,21 @@ with st.form("enquiry_form", clear_on_submit=True):
 
     submitted = st.form_submit_button("Submit Enquiry")
 
+def is_valid_phone(phone):
+    return phone.isdigit() and 7 <= len(phone) <= 15
+
 if submitted:
     if name.strip() and phone.strip():
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        sheet.append_row([now, name.strip(), phone.strip(), course], value_input_option="USER_ENTERED")
-        st.success("✅ Enquiry submitted and saved to Google Sheets!")
+        if not is_valid_phone(phone.strip()):
+            st.warning("⚠ Please enter a valid mobile number.")
+        else:
+            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            try:
+                with st.spinner("Submitting..."):
+                    sheet.append_row([now, name.strip(), phone.strip(), course], value_input_option="USER_ENTERED")
+                st.success("✅ Enquiry submitted and saved to Google Sheets!")
+            except Exception as e:
+                st.error(f"Error saving to Google Sheets: {e}")
     else:
         st.warning("⚠ Please fill all required fields (*)")
 
