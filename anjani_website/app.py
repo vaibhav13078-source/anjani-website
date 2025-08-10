@@ -1,8 +1,10 @@
+# app.py
 import streamlit as st
-import pandas as pd
-import os
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+from datetime import datetime
 
-# Set page config
+# Page Config
 st.set_page_config(page_title="Anjani Computer", page_icon=":computer:", layout="centered")
 
 # Header Section
@@ -35,7 +37,7 @@ courses = [
     {
         "name": "Typing with GCC TBC",
         "img": "https://raw.githubusercontent.com/vaibhav13078-source/anjani-website/main/anjani_website/Typing.jpg",
-     },
+    },
 ]
 
 cols = st.columns(3)
@@ -46,16 +48,22 @@ for idx, course in enumerate(courses):
             f"<div style='text-align:center; font-weight:600; color:#2980b9;'>{course['name']}</div>",
             unsafe_allow_html=True,
         )
-        st.button("Know More", key=course["name"])
 
-import streamlit as st
-import pandas as pd
-from datetime import datetime
+# Google Sheets Setup
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds_dict = st.secrets.get("google_service_account")
+if not creds_dict:
+    st.error("Google credentials not found in Streamlit secrets. Go to Settings → Secrets and add 'google_service_account'.")
+    st.stop()
 
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+client = gspread.authorize(creds)
+sheet = client.open_by_key("1eJsjTEBeibYszJFN-ij-4AUn0XI4GuHjWNf4U0YeqFs").sheet1
+
+# Enquiry Form
 st.markdown("---")
 st.subheader("📩 Enquiry Form")
 
-# Form UI
 with st.form("enquiry_form", clear_on_submit=True):
     col1, col2 = st.columns(2)
     with col1:
@@ -70,56 +78,18 @@ with st.form("enquiry_form", clear_on_submit=True):
 
     submitted = st.form_submit_button("Submit Enquiry")
 
-    if submitted:
-        if name.strip() and phone.strip():
-            new_data = pd.DataFrame([{
-                "Name": name.strip(),
-                "Phone": phone.strip(),
-                "Course": course,
-                "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }])
+if submitted:
+    if name.strip() and phone.strip():
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        sheet.append_row([now, name.strip(), phone.strip(), course], value_input_option="USER_ENTERED")
+        st.success("✅ Enquiry submitted and saved to Google Sheets!")
+    else:
+        st.warning("⚠ Please fill all required fields (*)")
 
-            file_path = "enquiries.xlsx"
-
-            try:
-                # Append if file exists
-                try:
-                    old_data = pd.read_excel(file_path, engine="openpyxl")
-                    df = pd.concat([old_data, new_data], ignore_index=True)
-                except FileNotFoundError:
-                    df = new_data
-
-                df.to_excel(file_path, index=False, engine="openpyxl")
-                st.success("✅ Your enquiry has been submitted successfully!")
-            except Exception as e:
-                st.error(f"❌ Error saving enquiry: {e}")
-        else:
-            st.warning("⚠ Please fill all required fields (*).")
-import streamlit as st
-from datetime import datetime
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-
-# Google Sheets setup
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds_dict = st.secrets["google_service_account"]
-creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-client = gspread.authorize(creds)
-sheet = client.open_by_key("1eJsjTEBeibYszJFN-ij-4AUn0XI4GuHjWNf4U0YeqFs").sheet1
-
-# Enquiry Form UI
-st.subheader("📩 Enquiry Form")
-with st.form("enquiry_form", clear_on_submit=True):
-    name = st.text_input("Full Name*")
-    phone = st.text_input("Mobile Number*")
-    course = st.selectbox("Select Course*", ["MS-CIT", "Tally Prime with GST", "Typing with GCC TBC", "Other"])
-    submitted = st.form_submit_button("Submit Enquiry")
-
-    if submitted:
-        if name.strip() and phone.strip():
-            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            sheet.append_row([now, name.strip(), phone.strip(), course])
-            st.success("✅ Enquiry submitted and saved to Google Sheets!")
-        else:
-            st.warning("⚠ Please fill all required fields (*).")
-
+# Optional: Admin view
+if st.checkbox("Show all enquiries (admin)"):
+    try:
+        data = sheet.get_all_records()
+        st.dataframe(data)
+    except Exception as e:
+        st.error(f"Error reading sheet: {e}")
