@@ -28,8 +28,7 @@ Latur Phata Chowk, Nanded
 
 st.markdown("""
 **Connect with us:**
-- [📩 WhatsApp](https://wa.me/917588424343)
-- [🌐 Website](https://google.com)
+- [📩 WhatsApp](https://whatsapp.com/channel/0029VbAjw12BA1ewKtqB7t2z)
 - [📸 Instagram](https://instagram.com/anjanicomputer_nanded)
 """)
 
@@ -42,3 +41,4 @@ st.markdown("""
     allowfullscreen="" loading="lazy"
     referrerpolicy="no-referrer-when-downgrade"></iframe>
 """, unsafe_allow_html=True)
+
